@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iris Classification Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --brand:    #6C63FF;
+      --brand2:   #48CAE4;
+      --success:  #2ECC71;
+      --warn:     #F39C12;
+      --danger:   #E74C3C;
+      --bg:       #0F1117;
+      --surface:  #1A1D27;
+      --card:     #22263A;
+      --border:   #2E334D;
+      --text:     #E8EAF6;
+      --muted:    #8A8FA8;
+      --radius:   14px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Top Nav ──────────────────────────────────────────────── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem; height: 60px;
+      background: rgba(15,17,23,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.1rem; }
+    .nav-brand .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--brand); display: inline-block; }
+    .nav-links { display: flex; gap: 1.8rem; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: .9rem; font-weight: 500; transition: color .2s; }
+    .nav-links a:hover { color: var(--text); }
+    .badge-live {
+      background: rgba(46,204,113,.15); color: var(--success);
+      border: 1px solid rgba(46,204,113,.3);
+      border-radius: 20px; padding: 3px 10px; font-size: .75rem; font-weight: 600;
+    }
+
+    /* ── Hero ─────────────────────────────────────────────────── */
+    .hero {
+      position: relative; overflow: hidden;
+      padding: 5rem 2rem 4rem;
+      text-align: center;
+      background: linear-gradient(135deg, #0F1117 0%, #1A1D27 60%, #0D1033 100%);
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(108,99,255,.25) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      display: inline-block;
+      background: rgba(108,99,255,.12);
+      border: 1px solid rgba(108,99,255,.35);
+      border-radius: 20px; padding: 4px 14px;
+      font-size: .8rem; font-weight: 600; color: #9D96FF;
+      letter-spacing: .05em; text-transform: uppercase; margin-bottom: 1.2rem;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800; line-height: 1.15;
+      background: linear-gradient(135deg, #fff 30%, #9D96FF 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      margin-top: 1rem; color: var(--muted); font-size: 1.05rem; max-width: 600px; margin-inline: auto;
+    }
+    .hero-tags { margin-top: 1.5rem; display: flex; gap: .6rem; justify-content: center; flex-wrap: wrap; }
+    .tag {
+      border-radius: 20px; padding: 4px 12px; font-size: .8rem; font-weight: 500;
+      border: 1px solid;
+    }
+    .tag-purple { background: rgba(108,99,255,.12); border-color: rgba(108,99,255,.4); color: #9D96FF; }
+    .tag-cyan   { background: rgba(72,202,228,.12); border-color: rgba(72,202,228,.4); color: var(--brand2); }
+    .tag-green  { background: rgba(46,204,113,.12); border-color: rgba(46,204,113,.4); color: var(--success); }
+
+    /* ── Layout ───────────────────────────────────────────────── */
+    .container { max-width: 1200px; margin-inline: auto; padding: 2.5rem 1.5rem; }
+    section { margin-bottom: 3rem; }
+    .section-title {
+      font-size: 1.1rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .08em;
+      margin-bottom: 1.2rem; display: flex; align-items: center; gap: .5rem;
+    }
+    .section-title::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ── Stat Cards ───────────────────────────────────────────── */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1rem; }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.4rem 1.2rem;
+      position: relative; overflow: hidden;
+      transition: transform .2s, border-color .2s;
+    }
+    .stat-card:hover { transform: translateY(-3px); border-color: var(--brand); }
+    .stat-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    }
+    .stat-card.purple::before { background: linear-gradient(90deg, var(--brand), #A78BFA); }
+    .stat-card.cyan::before   { background: linear-gradient(90deg, var(--brand2), #06B6D4); }
+    .stat-card.green::before  { background: linear-gradient(90deg, var(--success), #34D399); }
+    .stat-card.orange::before { background: linear-gradient(90deg, var(--warn), #FBBF24); }
+    .stat-card.red::before    { background: linear-gradient(90deg, var(--danger), #F87171); }
+
+    .stat-label { font-size: .78rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+    .stat-value { font-size: 2rem; font-weight: 800; margin: .4rem 0 .2rem; line-height: 1; }
+    .stat-sub   { font-size: .78rem; color: var(--muted); }
+    .stat-card.purple .stat-value { color: #A78BFA; }
+    .stat-card.cyan   .stat-value { color: var(--brand2); }
+    .stat-card.green  .stat-value { color: var(--success); }
+    .stat-card.orange .stat-value { color: var(--warn); }
+    .stat-card.red    .stat-value { color: var(--danger); }
+
+    /* ── Metrics Table ────────────────────────────────────────── */
+    .table-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    thead th {
+      background: rgba(108,99,255,.08);
+      padding: .9rem 1.1rem; text-align: left;
+      font-size: .78rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .06em;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(108,99,255,.06); }
+    tbody td { padding: .85rem 1.1rem; }
+    .class-pill {
+      display: inline-block; border-radius: 20px; padding: 3px 10px;
+      font-size: .78rem; font-weight: 600;
+    }
+    .class-setosa     { background: rgba(108,99,255,.15); color: #A78BFA; }
+    .class-versicolor { background: rgba(72,202,228,.15); color: var(--brand2); }
+    .class-virginica  { background: rgba(46,204,113,.15); color: var(--success); }
+    .bar-cell { display: flex; align-items: center; gap: .6rem; }
+    .bar { height: 8px; border-radius: 4px; background: var(--border); flex: 1; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 4px; }
+    .bar-purple { background: linear-gradient(90deg, var(--brand), #A78BFA); }
+    .bar-cyan   { background: linear-gradient(90deg, var(--brand2), #06B6D4); }
+    .bar-green  { background: linear-gradient(90deg, var(--success), #34D399); }
+    .val { font-weight: 700; min-width: 42px; }
+
+    /* ── Plots ────────────────────────────────────────────────── */
+    .plots-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+    @media (max-width: 720px) { .plots-grid { grid-template-columns: 1fr; } }
+    .plot-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+      transition: border-color .2s, transform .2s;
+    }
+    .plot-card:hover { border-color: var(--brand); transform: translateY(-3px); }
+    .plot-header { padding: 1rem 1.2rem; border-bottom: 1px solid var(--border); }
+    .plot-title { font-weight: 700; font-size: .95rem; }
+    .plot-sub   { font-size: .78rem; color: var(--muted); margin-top: 2px; }
+    .plot-card img { width: 100%; display: block; background: #fff; }
+
+    /* ── Confusion Matrix ─────────────────────────────────────── */
+    .cm-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+    .cm-header { font-size: .72rem; font-weight: 700; color: var(--muted); text-align: center; padding: .6rem; }
+    .cm-cell {
+      border-radius: 8px; padding: 1rem .5rem;
+      text-align: center; font-weight: 700; font-size: 1.3rem;
+      transition: transform .15s;
+    }
+    .cm-cell:hover { transform: scale(1.06); }
+    .cm-row-label { font-size: .78rem; font-weight: 600; color: var(--muted); display: flex; align-items: center; justify-content: flex-end; padding-right: .8rem; }
+    .cm-high   { background: rgba(108,99,255,.55); color: #fff; }
+    .cm-low    { background: rgba(231,76,60,.2);  color: #E87070; }
+    .cm-zero   { background: rgba(255,255,255,.04); color: var(--muted); }
+
+    /* ── Info Cards ───────────────────────────────────────────── */
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+    .info-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.4rem 1.2rem;
+      transition: border-color .2s;
+    }
+    .info-card:hover { border-color: var(--brand); }
+    .info-card h3 { font-size: .95rem; font-weight: 700; margin-bottom: .6rem; }
+    .info-card p  { font-size: .85rem; color: var(--muted); line-height: 1.6; }
+    .info-icon { font-size: 1.5rem; margin-bottom: .5rem; }
+
+    /* ── Footer ───────────────────────────────────────────────── */
+    footer {
+      text-align: center; padding: 2rem 1rem;
+      border-top: 1px solid var(--border); color: var(--muted); font-size: .8rem;
+    }
+    footer strong { color: var(--text); }
+
+    /* ── Scroll animations ────────────────────────────────────── */
+    .fade-in { opacity: 0; transform: translateY(20px); transition: opacity .5s, transform .5s; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav>
+  <div class="nav-brand">
+    <span class="dot"></span>
+    Iris ML Dashboard
+  </div>
+  <div class="nav-links">
+    <a href="#overview">Overview</a>
+    <a href="#per-class">Per-Class</a>
+    <a href="#visuals">Visuals</a>
+    <a href="#model">Model</a>
+  </div>
+  <span class="badge-live">● Live</span>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-eyebrow">AI & Expert Systems · Assignment 1</div>
+  <h1>Iris Classification<br>Evaluation Report</h1>
+  <p>A complete multi-class classification pipeline on the Iris flower dataset using a Random Forest classifier — with every major evaluation metric computed and visualised.</p>
+  <div class="hero-tags">
+    <span class="tag tag-purple">scikit-learn</span>
+    <span class="tag tag-cyan">Random Forest</span>
+    <span class="tag tag-green">3 Classes · 150 Samples</span>
+    <span class="tag tag-purple">Python 3.13</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ── Global Metrics ── -->
+  <section id="overview" class="fade-in">
+    <div class="section-title">Global Performance Metrics</div>
+    <div class="stat-grid">
+      <div class="stat-card green">
+        <div class="stat-label">Accuracy</div>
+        <div class="stat-value">90%</div>
+        <div class="stat-sub">27 / 30 correct predictions</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-label">Error Rate</div>
+        <div class="stat-value">10%</div>
+        <div class="stat-sub">3 misclassified samples</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-label">F1-Score (Macro)</div>
+        <div class="stat-value">0.900</div>
+        <div class="stat-sub">Harmonic mean of P &amp; R</div>
+      </div>
+      <div class="stat-card cyan">
+        <div class="stat-label">ROC AUC</div>
+        <div class="stat-value">0.987</div>
+        <div class="stat-sub">One-vs-Rest · Macro</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-label">Cohen's Kappa</div>
+        <div class="stat-value">0.850</div>
+        <div class="stat-sub">Almost perfect agreement</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-label">MCC</div>
+        <div class="stat-value">0.851</div>
+        <div class="stat-sub">Matthews Correlation</div>
+      </div>
+      <div class="stat-card cyan">
+        <div class="stat-label">Log Loss</div>
+        <div class="stat-value">0.226</div>
+        <div class="stat-sub">Cross-entropy loss</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Specificity</div>
+        <div class="stat-value">0.950</div>
+        <div class="stat-sub">True Negative Rate (Macro)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Averaged Metrics ── -->
+  <section class="fade-in">
+    <div class="section-title">Precision · Recall · F1 Averages</div>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Macro Average</th>
+            <th>Micro Average</th>
+            <th>Weighted Average</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Precision</strong></td>
+            <td>
+              <div class="bar-cell">
+                <div class="bar"><div class="bar-fill bar-purple" style="width:90.24%"></div></div>
+                <span class="val">0.902</span>
+              </div>
+            </td>
+            <td>
+              <div class="bar-cell">
+                <div class="bar"><div class="bar-fill bar-purple" style="width:90%"></div></div>
+                <span class="val">0.900</span>
+              </div>
+            </td>
+            <td>
+              <div class="bar-cell">
+                <div class="bar"><div class="bar-fill bar-purple" style="width:90.24%"></div></div>
+                <span class="val">0.902</span>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Recall (Sensitivity)</strong></td>
+            <td>
+              <div class="bar-cell">
+                <div class="bar"><div class="bar-fill bar-cyan" style="width:90%"></div></div>
+                <span class="val">0.900</span>
+              </div>
+            </td>
+            <td>
+              <div class="bar-cell">
+                <div class="bar"><div class="bar-fill bar-cyan" style="width:90%"></div></div>
+                <span class="val">0.900</span>
+              </div>
+            </td>
+            <td>
+              <div class="bar-cell">
+                <div class="bar"><div class="bar-fill bar-cyan" style="width:90%"></div></div>
+                <span class="val">0.900</span>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>F1-Score</strong></td>
+            <td>
+              <div class="bar-cell">
+                <div class="bar"><div class="bar-fill bar-green" style="width:89.97%"></div></div>
+                <span class="val">0.900</span>
+              </div>
+            </td>
+            <td>
+              <div class="bar-cell">
+                <div class="bar"><div class="bar-fill bar-green" style="width:90%"></div></div>
+                <span class="val">0.900</span>
+              </div>
+            </td>
+            <td>
+              <div class="bar-cell">
+                <div class="bar"><div class="bar-fill bar-green" style="width:89.97%"></div></div>
+                <span class="val">0.900</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── Per-Class Breakdown ── -->
+  <section id="per-class" class="fade-in">
+    <div class="section-title">Per-Class Breakdown</div>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Class</th>
+            <th>Precision</th>
+            <th>Recall</th>
+            <th>Specificity</th>
+            <th>F1-Score</th>
+            <th>Support</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="class-pill class-setosa">Setosa</span></td>
+            <td><div class="bar-cell"><div class="bar"><div class="bar-fill bar-purple" style="width:100%"></div></div><span class="val">1.000</span></div></td>
+            <td><div class="bar-cell"><div class="bar"><div class="bar-fill bar-cyan" style="width:100%"></div></div><span class="val">1.000</span></div></td>
+            <td><div class="bar-cell"><div class="bar"><div class="bar-fill bar-green" style="width:100%"></div></div><span class="val">1.000</span></div></td>
+            <td><div class="bar-cell"><div class="bar"><div class="bar-fill bar-purple" style="width:100%"></div></div><span class="val">1.000</span></div></td>
+            <td><strong>10</strong></td>
+          </tr>
+          <tr>
+            <td><span class="class-pill class-versicolor">Versicolor</span></td>
+            <td><div class="bar-cell"><div class="bar"><div class="bar-fill bar-purple" style="width:81.8%"></div></div><span class="val">0.818</span></div></td>
+            <td><div class="bar-cell"><div class="bar"><div class="bar-fill bar-cyan" style="width:90%"></div></div><span class="val">0.900</span></div></td>
+            <td><div class="bar-cell"><div class="bar"><div class="bar-fill bar-green" style="width:90%"></div></div><span class="val">0.900</span></div></td>
+            <td><div class="bar-cell"><div class="bar"><div class="bar-fill bar-purple" style="width:85.7%"></div></div><span class="val">0.857</span></div></td>
+            <td><strong>10</strong></td>
+          </tr>
+          <tr>
+            <td><span class="class-pill class-virginica">Virginica</span></td>
+            <td><div class="bar-cell"><div class="bar"><div class="bar-fill bar-purple" style="width:88.9%"></div></div><span class="val">0.889</span></div></td>
+            <td><div class="bar-cell"><div class="bar"><div class="bar-fill bar-cyan" style="width:80%"></div></div><span class="val">0.800</span></div></td>
+            <td><div class="bar-cell"><div class="bar"><div class="bar-fill bar-green" style="width:95%"></div></div><span class="val">0.950</span></div></td>
+            <td><div class="bar-cell"><div class="bar"><div class="bar-fill bar-purple" style="width:84.2%"></div></div><span class="val">0.842</span></div></td>
+            <td><strong>10</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── Confusion Matrix ── -->
+  <section class="fade-in">
+    <div class="section-title">Confusion Matrix</div>
+    <div class="table-card" style="padding:1.5rem">
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem;">Rows = Actual class &nbsp;·&nbsp; Columns = Predicted class</p>
+      <div class="cm-grid">
+        <!-- header row -->
+        <div class="cm-header"></div>
+        <div class="cm-header" style="color:#A78BFA">Pred Setosa</div>
+        <div class="cm-header" style="color:var(--brand2)">Pred Versicolor</div>
+        <div class="cm-header" style="color:var(--success)">Pred Virginica</div>
+        <!-- setosa row -->
+        <div class="cm-row-label" style="color:#A78BFA">Actual Setosa</div>
+        <div class="cm-cell cm-high">10</div>
+        <div class="cm-cell cm-zero">0</div>
+        <div class="cm-cell cm-zero">0</div>
+        <!-- versicolor row -->
+        <div class="cm-row-label" style="color:var(--brand2)">Actual Versicolor</div>
+        <div class="cm-cell cm-zero">0</div>
+        <div class="cm-cell cm-high">9</div>
+        <div class="cm-cell cm-low">1</div>
+        <!-- virginica row -->
+        <div class="cm-row-label" style="color:var(--success)">Actual Virginica</div>
+        <div class="cm-cell cm-zero">0</div>
+        <div class="cm-cell cm-low">2</div>
+        <div class="cm-cell cm-high">8</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Plots ── -->
+  <section id="visuals" class="fade-in">
+    <div class="section-title">Visualisations</div>
+    <div class="plots-grid">
+      <div class="plot-card">
+        <div class="plot-header">
+          <div class="plot-title">Confusion Matrix Heatmap</div>
+          <div class="plot-sub">Generated by seaborn · 30 test samples</div>
+        </div>
+        <img src="/confusion_matrix.png" alt="Confusion Matrix Heatmap" />
+      </div>
+      <div class="plot-card">
+        <div class="plot-header">
+          <div class="plot-title">Multi-Class ROC Curves</div>
+          <div class="plot-sub">One-vs-Rest · AUC ≈ 0.987 for all classes</div>
+        </div>
+        <img src="/roc_curves.png" alt="ROC Curves" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Model Info ── -->
+  <section id="model" class="fade-in">
+    <div class="section-title">Model &amp; Setup Details</div>
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-icon">🌲</div>
+        <h3>Random Forest Classifier</h3>
+        <p>100 decision trees with <code>random_state=42</code>. An ensemble method that reduces variance through bagging and random feature selection.</p>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">🌸</div>
+        <h3>Iris Dataset</h3>
+        <p>150 samples · 4 features (sepal length, sepal width, petal length, petal width) · 3 balanced classes: Setosa, Versicolor, Virginica.</p>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">✂️</div>
+        <h3>Train / Test Split</h3>
+        <p>80% training (120 samples) · 20% testing (30 samples). Stratified sampling to preserve equal class proportions in both splits.</p>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">🧪</div>
+        <h3>Stack</h3>
+        <p>Python 3.13 · scikit-learn 1.9 · pandas 3.1 · numpy 2.5 · matplotlib 3.11 · seaborn 0.13 · Flask 3.1</p>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /container -->
+
+<footer>
+  AI &amp; Expert Systems &nbsp;·&nbsp; Assignment 1
+</footer>
+
+<script>
+  // Scroll-triggered fade-in animation
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
