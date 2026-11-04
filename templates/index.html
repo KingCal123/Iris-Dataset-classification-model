@@ -224,6 +224,7 @@
   <div class="nav-links">
     <a href="#overview">Overview</a>
     <a href="#per-class">Per-Class</a>
+    <a href="#dataset">Dataset</a>
     <a href="#visuals">Visuals</a>
     <a href="#model">Model</a>
   </div>
@@ -450,6 +451,48 @@
   </section>
 
   <!-- ── Plots ── -->
+  
+  <!-- ── Dataset Explorer ── -->
+  <section id="dataset" class="fade-in">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:1rem;">
+      <div class="section-title" style="margin-bottom:0;flex:1;">Iris Flower Dataset Explorer (150 Samples)</div>
+      <div style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;">
+        <a href="/download/dataset" class="tag tag-green" style="text-decoration:none;font-weight:600;padding:6px 14px;">⬇ Download CSV</a>
+        <a href="https://archive.ics.uci.edu/dataset/53/iris" target="_blank" class="tag tag-cyan" style="text-decoration:none;font-weight:600;padding:6px 14px;">🔗 UCI Repository</a>
+        <a href="https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_iris.html" target="_blank" class="tag tag-purple" style="text-decoration:none;font-weight:600;padding:6px 14px;">🔗 scikit-learn Docs</a>
+      </div>
+    </div>
+
+    <div class="table-card" style="padding:1.2rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.8rem;">
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+          <button onclick="filterSpecies('all')" id="btn-all" class="tag tag-purple" style="cursor:pointer;border:none;">All (150)</button>
+          <button onclick="filterSpecies('setosa')" id="btn-setosa" class="tag" style="cursor:pointer;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--muted);">Setosa (50)</button>
+          <button onclick="filterSpecies('versicolor')" id="btn-versicolor" class="tag" style="cursor:pointer;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--muted);">Versicolor (50)</button>
+          <button onclick="filterSpecies('virginica')" id="btn-virginica" class="tag" style="cursor:pointer;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--muted);">Virginica (50)</button>
+        </div>
+        <div style="color:var(--muted);font-size:0.85rem;" id="dataset-count">Showing 150 of 150 records</div>
+      </div>
+
+      <div style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
+        <table style="width:100%;">
+          <thead style="position:sticky;top:0;background:var(--card);z-index:10;">
+            <tr>
+              <th style="width:60px;">#</th>
+              <th>Sepal Length (cm)</th>
+              <th>Sepal Width (cm)</th>
+              <th>Petal Length (cm)</th>
+              <th>Petal Width (cm)</th>
+              <th>Species</th>
+            </tr>
+          </thead>
+          <tbody id="dataset-tbody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
   <section id="visuals" class="fade-in">
     <div class="section-title">Visualisations</div>
     <div class="plots-grid">
@@ -510,5 +553,48 @@
   }, { threshold: 0.1 });
   document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
 </script>
+
+<script>
+  const rawDataset = {{ dataset_json | safe }};
+  function renderDatasetTable(filter) {
+    const tbody = document.getElementById('dataset-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    const filtered = filter === 'all' ? rawDataset : rawDataset.filter(r => r.species.toLowerCase() === filter.toLowerCase());
+    filtered.forEach(row => {
+      const tr = document.createElement('tr');
+      const pillClass = row.species === 'setosa' ? 'class-setosa' : (row.species === 'versicolor' ? 'class-versicolor' : 'class-virginica');
+      tr.innerHTML = '<td><span style="color:var(--muted);font-weight:600;">' + row.id + '</span></td>' +
+                     '<td><strong>' + row.sepal_length.toFixed(1) + '</strong></td>' +
+                     '<td>' + row.sepal_width.toFixed(1) + '</td>' +
+                     '<td><strong>' + row.petal_length.toFixed(1) + '</strong></td>' +
+                     '<td>' + row.petal_width.toFixed(1) + '</td>' +
+                     '<td><span class="class-pill ' + pillClass + '">' + row.species + '</span></td>';
+      tbody.appendChild(tr);
+    });
+    document.getElementById('dataset-count').innerText = 'Showing ' + filtered.length + ' of ' + rawDataset.length + ' records';
+    ['all', 'setosa', 'versicolor', 'virginica'].forEach(s => {
+      const b = document.getElementById('btn-' + s);
+      if (b) {
+        if (s === filter) {
+          b.className = 'tag tag-purple';
+          b.style.background = '';
+          b.style.borderColor = '';
+          b.style.color = '';
+        } else {
+          b.className = 'tag';
+          b.style.background = 'rgba(255,255,255,.05)';
+          b.style.borderColor = 'var(--border)';
+          b.style.color = 'var(--muted)';
+        }
+      }
+    });
+  }
+  function filterSpecies(species) {
+    renderDatasetTable(species);
+  }
+  renderDatasetTable('all');
+</script>
+
 </body>
 </html>
