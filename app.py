@@ -1,10 +1,11 @@
 import os
-from flask import Flask, render_template
+from flask import Flask, render_template, send_from_directory
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
+PUBLIC_DIR = os.path.join(BASE_DIR, "public")
 
-app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder="public", static_url_path="")
+app = Flask(__name__, template_folder=TEMPLATE_DIR)
 
 METRICS = {
     "accuracy":    "90.00%",
@@ -31,6 +32,14 @@ METRICS = {
 @app.route("/")
 def index():
     return render_template("index.html", **METRICS)
+
+@app.route("/confusion_matrix.png")
+def confusion_matrix_img():
+    return send_from_directory(PUBLIC_DIR, "confusion_matrix.png")
+
+@app.route("/roc_curves.png")
+def roc_curves_img():
+    return send_from_directory(PUBLIC_DIR, "roc_curves.png")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
