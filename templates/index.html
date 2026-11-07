@@ -544,7 +544,7 @@
           <div class="kpi-header">
             <span class="kpi-label">Classification Accuracy</span>
           </div>
-          <div class="kpi-val">{ accuracy }</div>
+          <div class="kpi-val">{{ accuracy }}</div>
           <div class="kpi-sub">27 / 30 hold-out instances correct</div>
         </div>
 
@@ -552,7 +552,7 @@
           <div class="kpi-header">
             <span class="kpi-label">Error Rate</span>
           </div>
-          <div class="kpi-val">{ error_rate }</div>
+          <div class="kpi-val">{{ error_rate }}</div>
           <div class="kpi-sub">Residual error (1 - Accuracy)</div>
         </div>
 
@@ -560,7 +560,7 @@
           <div class="kpi-header">
             <span class="kpi-label">ROC AUC (OvR Macro)</span>
           </div>
-          <div class="kpi-val">{ roc_ovr_mac }</div>
+          <div class="kpi-val">{{ roc_ovr_mac }}</div>
           <div class="kpi-sub">One-vs-Rest discriminative area</div>
         </div>
 
@@ -568,7 +568,7 @@
           <div class="kpi-header">
             <span class="kpi-label">F1-Score (Macro)</span>
           </div>
-          <div class="kpi-val">{ f1_macro }</div>
+          <div class="kpi-val">{{ f1_macro }}</div>
           <div class="kpi-sub">Unweighted harmonic mean</div>
         </div>
 
@@ -576,7 +576,7 @@
           <div class="kpi-header">
             <span class="kpi-label">Cohen's Kappa (κ)</span>
           </div>
-          <div class="kpi-val">{ kappa }</div>
+          <div class="kpi-val">{{ kappa }}</div>
           <div class="kpi-sub">Chance-corrected agreement</div>
         </div>
 
@@ -584,7 +584,7 @@
           <div class="kpi-header">
             <span class="kpi-label">Matthews Correlation (MCC)</span>
           </div>
-          <div class="kpi-val">{ mcc }</div>
+          <div class="kpi-val">{{ mcc }}</div>
           <div class="kpi-sub">Balanced multi-class index</div>
         </div>
 
@@ -592,7 +592,7 @@
           <div class="kpi-header">
             <span class="kpi-label">Log Loss</span>
           </div>
-          <div class="kpi-val">{ log_loss }</div>
+          <div class="kpi-val">{{ log_loss }}</div>
           <div class="kpi-sub">Cross-entropy penalty score</div>
         </div>
 
@@ -600,7 +600,7 @@
           <div class="kpi-header">
             <span class="kpi-label">Macro Specificity</span>
           </div>
-          <div class="kpi-val">{ spec_macro }</div>
+          <div class="kpi-val">{{ spec_macro }}</div>
           <div class="kpi-sub">True Negative Rate average</div>
         </div>
       </div>
@@ -719,27 +719,27 @@
             <tbody>
               <tr>
                 <td><strong>Precision</strong></td>
-                <td class="mono-num">{ prec_macro }</td>
-                <td class="mono-num">{ prec_micro }</td>
-                <td class="mono-num">{ prec_w }</td>
+                <td class="mono-num">{{ prec_macro }}</td>
+                <td class="mono-num">{{ prec_micro }}</td>
+                <td class="mono-num">{{ prec_w }}</td>
               </tr>
               <tr>
                 <td><strong>Recall</strong></td>
-                <td class="mono-num">{ rec_macro }</td>
-                <td class="mono-num">{ rec_micro }</td>
-                <td class="mono-num">{ rec_w }</td>
+                <td class="mono-num">{{ rec_macro }}</td>
+                <td class="mono-num">{{ rec_micro }}</td>
+                <td class="mono-num">{{ rec_w }}</td>
               </tr>
               <tr>
                 <td><strong>F1-Score</strong></td>
-                <td class="mono-num">{ f1_macro }</td>
+                <td class="mono-num">{{ f1_macro }}</td>
                 <td class="mono-num">{ f1_micro }</td>
-                <td class="mono-num">{ f1_w }</td>
+                <td class="mono-num">{{ f1_w }}</td>
               </tr>
               <tr>
                 <td><strong>ROC AUC</strong></td>
-                <td class="mono-num">{ roc_ovr_mac }</td>
-                <td class="mono-num">{ roc_ovr_mac }</td>
-                <td class="mono-num">{ roc_ovr_w }</td>
+                <td class="mono-num">{{ roc_ovr_mac }}</td>
+                <td class="mono-num">{{ roc_ovr_mac }}</td>
+                <td class="mono-num">{{ roc_ovr_w }}</td>
               </tr>
             </tbody>
           </table>
